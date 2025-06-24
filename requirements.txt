@@ -1,0 +1,5 @@
+pdfminer.six
+docx2txt
+scikit-learn
+streamlit
+nltk
