@@ -1,0 +1,32 @@
+import streamlit as st
+from ranker import extract_resume_text
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import os
+
+st.title("📄 Resume Ranker")
+
+job_desc = st.text_area("Paste Job Description")
+
+uploaded_files = st.file_uploader("Upload Resumes", accept_multiple_files=True, type=["pdf", "docx", "txt"])
+
+if st.button("Rank Resumes"):
+    if job_desc and uploaded_files:
+        results = []
+        for file in uploaded_files:
+            content = file.read()
+            path = f"temp_{file.name}"
+            with open(path, "wb") as f:
+                f.write(content)
+
+            text = extract_resume_text(path)
+            tfidf = TfidfVectorizer(stop_words='english')
+            matrix = tfidf.fit_transform([job_desc, text])
+            score = cosine_similarity(matrix[0:1], matrix[1:2])[0][0]
+            results.append((file.name, score))
+            os.remove(path)
+
+        sorted_results = sorted(results, key=lambda x: x[1], reverse=True)
+        st.subheader("Ranking:")
+        for name, score in sorted_results:
+            st.write(f"✅ {name} — Score: {score:.4f}")
