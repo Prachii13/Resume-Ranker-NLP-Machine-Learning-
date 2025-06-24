@@ -1,0 +1,44 @@
+
+---
+
+### 🔧 `ranker.py`
+```python
+import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import docx2txt
+from pdfminer.high_level import extract_text
+
+def extract_resume_text(file_path):
+    if file_path.endswith(".pdf"):
+        return extract_text(file_path)
+    elif file_path.endswith(".docx"):
+        return docx2txt.process(file_path)
+    elif file_path.endswith(".txt"):
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return ""
+
+# Load job description
+with open("data/job_description.txt", "r") as f:
+    jd = f.read()
+
+# Load resumes
+folder = "data/resumes"
+scores = []
+files = os.listdir(folder)
+
+for file in files:
+    resume_path = os.path.join(folder, file)
+    text = extract_resume_text(resume_path)
+    docs = [jd, text]
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(docs)
+    score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+    scores.append((file, score))
+
+# Sort by score
+scores.sort(key=lambda x: x[1], reverse=True)
+print("\n📊 Resume Ranking:")
+for i, (file, score) in enumerate(scores, 1):
+    print(f"{i}. {file} --> Score: {score:.4f}")
