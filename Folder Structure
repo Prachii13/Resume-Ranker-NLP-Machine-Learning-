@@ -1,0 +1,8 @@
+resume_ranker/
+├── data/resumes/                         # Folder of resumes (PDF or TXT)
+├── data/job_description.txt              # Input job description
+├── ranker.py                             # Core logic (similarity + ranking)
+├── app.py                                # Streamlit UI
+├── requirements.txt
+├── README.md
+└── .gitignore
